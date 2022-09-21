@@ -4,7 +4,7 @@ import { auth } from '../middleware/auth.js'
 
 const router = express.Router()
 
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
     try {
         const likes = await db.Likes.findAll()
         res.json(likes)
@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
     }
 })
 
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
     try {
         await db.Likes.create(req.body)
         res.send('Patiktukas sėkmingai išsaugotas!')
@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
     }
 })
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
     try {
         const like = await db.Likes.findByPk(req.params.id)
         res.json(like)
@@ -34,7 +34,7 @@ router.get('/:id', async (req, res) => {
     }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
     try {
         const like = await db.Likes.findByPk(req.params.id)
         await like.destroy()

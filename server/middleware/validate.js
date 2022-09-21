@@ -22,7 +22,7 @@ const validate = (schema, req, res, next) => {
                 message = 'Būtina įkelti nuotrauką'
                 break
             case 'comment':
-                message = 'Komentaras turi būti 5-255 simbolių ilgio'
+                message = 'Komentaras turi būti 1-255 simbolių ilgio'
                 break
             default:
                 message = 'Netinkamai užpildyti laukeliai'
@@ -46,6 +46,16 @@ export const userValidator = (req, res, next) => {
     validate(schema, req, res, next)
 }
 
+export const userEditValidator = (req, res, next) => {
+    const schema = Joi.object({
+        username: Joi.string().min(2).max(50).required(),
+        email: Joi.string().email().required(),
+        photo: Joi.string().allow(''),
+        about: Joi.string().allow('')
+    })
+    validate(schema, req, res, next)
+}
+
 export const loginValidator = (req, res, next) => {
     const schema = Joi.object({
         username: Joi.string().required(),
@@ -57,15 +67,17 @@ export const loginValidator = (req, res, next) => {
 export const photoValidator = (req, res, next) => {
     const schema = Joi.object({
         photo: Joi.string(),
-        caption: Joi.string().allow('')
-
+        caption: Joi.string().allow(''),
+        userId: Joi.number().required()
     })
     validate(schema, req, res, next)
 }
 
 export const commentValidator = (req, res, next) => {
     const schema = Joi.object({
-        comment: Joi.string().min(5).max(255).required(),
+        comment: Joi.string().min(1).max(255).required(),
+        photoId: Joi.number().required(),
+        userId: Joi.number().required(),
     })
     validate(schema, req, res, next)
 }

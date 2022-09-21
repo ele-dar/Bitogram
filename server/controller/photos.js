@@ -8,9 +8,22 @@ import { auth } from '../middleware/auth.js'
 
 const router = express.Router()
 
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
     try {
-        const photos = await db.Photos.findAll()
+        const photos = await db.Photos.findAll({
+            include: [
+                { model: db.Users, attributes: ['username', 'photo'] },
+                { model: db.Likes, attributes: ['userId'] },
+                {
+                    model: db.Comments,
+                    attributes: ['id', 'comment'],
+                    include: { model: db.Users, attributes: ['username'] }
+                }
+            ],
+            order: [
+                ['createdAt', 'DESC']
+            ]
+        })
         res.json(photos)
     } catch (e) {
         console.log(e)
@@ -18,7 +31,7 @@ router.get('/', async (req, res) => {
     }
 })
 
-router.post('/', upload.single('photo'), photoValidator, async (req, res) => {
+router.post('/', upload.single('photo'), auth, photoValidator, async (req, res) => {
     try {
         if (req.file) req.body.photo = '/' + req.file.path
         await db.Photos.create(req.body)
@@ -29,9 +42,15 @@ router.post('/', upload.single('photo'), photoValidator, async (req, res) => {
     }
 })
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
     try {
-        const photo = await db.Photos.findByPk(req.params.id)
+        const photo = await db.Photos.findByPk(req.params.id, {
+            include: [
+                { model: db.Comments, include: [{ model: db.Users, attributes: ['username'] }] },
+                { model: db.Likes, attributes: ['id', 'userId'] },
+                { model: db.Users, attributes: ['username', 'photo'] }
+            ]
+        })
         res.json(photo)
     } catch (e) {
         console.log(e)
@@ -39,7 +58,7 @@ router.get('/:id', async (req, res) => {
     }
 })
 
-router.put('/:id', upload.single('photo'), photoValidator, async (req, res) => {
+router.put('/:id', upload.single('photo'), auth, photoValidator, async (req, res) => {
     try {
         if (req.file) req.body.photo = '/' + req.file.path
         const photo = await db.Photos.findByPk(req.params.id)
@@ -51,7 +70,7 @@ router.put('/:id', upload.single('photo'), photoValidator, async (req, res) => {
     }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
     try {
         const photo = await db.Photos.findByPk(req.params.id)
         await photo.destroy()

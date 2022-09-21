@@ -8,7 +8,7 @@ import { auth } from '../middleware/auth.js'
 
 const router = express.Router()
 
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
     try {
         const comments = await db.Comments.findAll()
         res.json(comments)
@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
     }
 })
 
-router.post('/', commentValidator, async (req, res) => {
+router.post('/', auth, commentValidator, async (req, res) => {
     try {
         await db.Comments.create(req.body)
         res.send('Komentaras sėkmingai išsaugotas!')
@@ -28,7 +28,7 @@ router.post('/', commentValidator, async (req, res) => {
     }
 })
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
     try {
         const comment = await db.Comments.findByPk(req.params.id)
         res.json(comment)
@@ -38,7 +38,7 @@ router.get('/:id', async (req, res) => {
     }
 })
 
-router.put('/:id', commentValidator, async (req, res) => {
+router.put('/:id', auth, commentValidator, async (req, res) => {
     try {
         const comment = await db.Comments.findByPk(req.params.id)
         await comment.update(req.body)
@@ -49,7 +49,7 @@ router.put('/:id', commentValidator, async (req, res) => {
     }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
     try {
         const comment = await db.Comments.findByPk(req.params.id)
         await comment.destroy()

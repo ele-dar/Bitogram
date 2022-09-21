@@ -15,6 +15,9 @@ app.use(cors())
 // Duomenų priėmimas POST metodu
 app.use(express.urlencoded({ extended: true }))
 
+// Static failų panaudojimas
+app.use('/uploads', express.static('uploads'))
+
 // Duomenų priėmimas JSON formatu
 app.use(express.json())
 

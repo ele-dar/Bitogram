@@ -3,7 +3,7 @@ import db from '../database/connect.js'
 import bcrypt from 'bcrypt'
 import { Op } from 'sequelize'
 import upload from '../middleware/multer.js'
-import { userValidator, loginValidator } from "../middleware/validate.js"
+import { userValidator, userEditValidator, loginValidator } from "../middleware/validate.js"
 import { auth } from '../middleware/auth.js'
 
 const router = express.Router()
@@ -32,9 +32,25 @@ router.post('/register', upload.single('photo'), userValidator, async (req, res)
     }
 })
 
-router.get('/single/:id', async (req, res) => {
+router.get('/single/:id', auth, async (req, res) => {
     try {
-        const user = await db.Users.findByPk(req.params.id)
+        const user = await db.Users.findByPk(req.params.id, {
+            include: {
+                model: db.Photos,
+                attributes: ['id', 'photo', 'caption', 'createdAt'],
+                include: [
+                    { model: db.Likes, attributes: ['userId'] },
+                    {
+                        model: db.Comments,
+                        attributes: ['id', 'comment'],
+                        include: { model: db.Users, attributes: ['username'] }
+                    }
+                ]
+            },
+            order: [
+                [db.Photos, 'createdAt', 'DESC']
+            ],
+        })
         res.json(user)
     } catch (e) {
         console.log(e)
@@ -42,7 +58,23 @@ router.get('/single/:id', async (req, res) => {
     }
 })
 
-router.put('/edit/:id', upload.single('photo'), userValidator, async (req, res) => {
+router.get('/search/:keyword', auth, async (req, res) => {
+    try {
+        const users = await db.Users.findAll({
+            where: {
+                username: {
+                    [Op.substring]: req.params.keyword
+                }
+            }
+        })
+        res.json(users)
+    } catch (e) {
+        console.log(e)
+        res.status(500).send('Įvyko vidinė serverio klaida')
+    }
+})
+
+router.put('/edit/:id', upload.single('photo'), auth, userEditValidator, async (req, res) => {
     try {
         if (req.file) req.body.photo = '/' + req.file.path
         const user = await db.Users.findByPk(req.params.id)
@@ -67,6 +99,7 @@ router.post('/login', loginValidator, async (req, res) => {
             req.session.user = {
                 id: user.id,
                 username: user.username,
+                photo: user.photo
             }
             res.send({ message: 'Prisijungimas sėkmingas', user: req.session.user })
         } else {
