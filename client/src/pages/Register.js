@@ -54,7 +54,7 @@ const Register = () => {
                     <label >Aprašymas</label>
                 </div>
                 <div>
-                    <input type="file" className="form-control" placeholder="Photo" name="photo" onChange={(e) => handleForm(e)} />
+                    <input type="file" className="form-control" placeholder="Nuotrauka" name="photo" onChange={(e) => handleForm(e)} />
                 </div>
                 <button className="mt-3 w-100 btn btn-lg btn-secondary" type="submit">Tęsti</button>
             </form>
